@@ -7,7 +7,7 @@ This project provides a comprehensive solution for healthcare data management, f
 
 ![Patient Data Web Interface](https://via.placeholder.com/800x400?text=Patient+Data+Web+Interface)
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Clone the repository
@@ -168,7 +168,7 @@ python src/run_all.py --all
 
 ---
 
-## 📋 Input File Format
+## Input File Format
 
 The input CSV file should contain the following columns:
 
@@ -188,7 +188,7 @@ P003,Bob Johnson,1947-11-10,77,555-3456,bob.johnson@example.com,Male,Arthritis,1
 
 ---
 
-## ✅ Implemented Features
+## Implemented Features
 
 - [x] Professional PDF report generation with patient vitals and charts
 - [x] Command-line interface with customizable parameters
@@ -198,24 +198,15 @@ P003,Bob Johnson,1947-11-10,77,555-3456,bob.johnson@example.com,Male,Arthritis,1
 - [x] Robust error handling and validation
 - [x] Support for both column name formats (`name` and `full_name`)
 
-## 🔮 Future Enhancements
-
-- [ ] User authentication for the web interface
-- [ ] Analytics dashboard for patient data
-- [ ] Mobile-responsive design improvements
-- [ ] Additional report templates and customization options
-- [ ] Export to other formats (XLSX, JSON)
-- [ ] Integration with electronic health record (EHR) systems
-
 ---
 
-## 👨‍💻 Author
+##  Author
 
 Developed by Rafael Puente — Computer Science student and aspiring healthcare IT specialist.
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License. You are free to use, modify, and distribute this software with appropriate attribution.
 
@@ -223,17 +214,4 @@ This project is licensed under the MIT License. You are free to use, modify, and
 
 - **GitHub**: [rafaelipuente](https://github.com/rafaelipuente)
 - **Project Issues**: For help or to report bugs, please [open an issue](https://github.com/rafaelipuente/medical-records-automation/issues)
-
----
-
-## 📸 Screenshots
-
-### Web Interface
-![Web Interface](https://via.placeholder.com/800x400?text=Web+Interface+Screenshot)
-
-### Sample Report
-![Sample Report](https://via.placeholder.com/400x600?text=Sample+PDF+Report)
-
-### Data Cleaning Process
-![Data Cleaning](https://via.placeholder.com/800x300?text=Data+Cleaning+Visualization)
 
