@@ -1,0 +1,15 @@
+# Python stuff
+__pycache__/
+*.pyc
+
+# Data outputs
+*.log
+*.csv
+
+# App folders
+logs/
+charts/
+patient_reports/
+
+# Jupyter junk (if you ever use notebooks)
+.ipynb_checkpoints/

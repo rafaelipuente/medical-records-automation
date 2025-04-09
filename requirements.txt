@@ -1,0 +1,8 @@
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+fpdf>=1.7.2
+yagmail>=0.15.293
+flask>=2.2.3
+werkzeug>=2.2.3
+gunicorn>=20.1.0

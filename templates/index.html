@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Data Automation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        button, .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover, .button:hover {
+            background-color: #2980b9;
+        }
+        input[type="file"] {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        #result, #reportsList, #error {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            display: none;
+        }
+        #result {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: none;
+        }
+        .report-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: none;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .step {
+            opacity: 0.5;
+        }
+        .step.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Patient Data Automation</h1>
+    <p>Upload your patient data, clean it, and generate reports with this simple web application.</p>
+
+    <!-- Step 1: Upload CSV File -->
+    <div class="container step active" id="step1">
+        <div class="card">
+            <h2>Step 1: Upload Patient CSV File</h2>
+            <p>Upload your patient data CSV file. The system will clean the data and prepare it for report generation.</p>
+            <form id="uploadForm">
+                <input type="file" id="csvFile" accept=".csv" required>
+                <button type="submit" id="uploadButton">Upload & Clean Data</button>
+                <span class="loader" id="uploadLoader"></span>
+            </form>
+            <div id="uploadResult"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Generate Reports -->
+    <div class="container step" id="step2">
+        <div class="card">
+            <h2>Step 2: Generate Patient Reports</h2>
+            <p>Generate PDF reports for all patients in the cleaned data.</p>
+            <button id="generateButton" disabled>Generate Reports</button>
+            <span class="loader" id="generateLoader"></span>
+            <div id="generateResult"></div>
+        </div>
+    </div>
+
+    <!-- Step 3: Download Reports -->
+    <div class="container step" id="step3">
+        <div class="card">
+            <h2>Step 3: Download Reports</h2>
+            <p>Download individual patient reports or get all reports as a batch.</p>
+            <div id="reportsList"></div>
+            <div id="downloadsSection" style="margin-top:15px; display:none;">
+                <button id="downloadAllButton">Download All Reports</button>
+                <button id="downloadCleanedButton">Download Cleaned Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="error"></div>
+    <div id="result"></div>
+
+    <script>
+        // Global variable to store the job ID
+        let currentJobId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadForm = document.getElementById('uploadForm');
+            const generateButton = document.getElementById('generateButton');
+            const uploadLoader = document.getElementById('uploadLoader');
+            const generateLoader = document.getElementById('generateLoader');
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+
+            // Upload form submission
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                error.style.display = 'none';
+                result.style.display = 'none';
+                
+                const fileInput = document.getElementById('csvFile');
+                if (!fileInput.files[0]) {
+                    showError('Please select a CSV file to upload.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                uploadLoader.style.display = 'inline-block';
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        currentJobId = data.job_id;
+                        document.getElementById('uploadResult').innerHTML = `
+                            <p>✅ File uploaded and cleaned successfully!</p>
+                            <p><strong>Job ID:</strong> ${data.job_id}</p>
+                        `;
+                        generateButton.disabled = false;
+                        step2.classList.add('active');
+                        showSuccess('File uploaded and cleaned successfully!');
+                    } else {
+                        showError(data.message || 'An error occurred during upload.');
+                    }
+                } catch (error) {
+                    showError(`Error uploading file: ${error.message}`);
+                } finally {
+                    uploadLoader.style.display = 'none';
+                }
+            });
+
+            // Generate reports button
+            generateButton.addEventListener('click', async () => {
+                if (!currentJobId) {
+                    showError('Please upload and clean data first.');
+                    return;
+                }
+
+                generateLoader.style.display = 'inline-block';
+                error.style.display = 'none';
+                result.style.display = 'none';
+
+                try {
+                    const response = await fetch('/api/generate-reports', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            job_id: currentJobId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        document.getElementById('generateResult').innerHTML = `
+                            <p>✅ Generated ${data.reports.length} patient reports!</p>
+                        `;
+                        showSuccess(`Generated ${data.reports.length} reports successfully!`);
+                        step3.classList.add('active');
+                        displayReports(data.reports, currentJobId);
+                    } else {
+                        showError(data.message || 'An error occurred while generating reports.');
+                    }
+                } catch (error) {
+                    showError(`Error generating reports: ${error.message}`);
+                } finally {
+                    generateLoader.style.display = 'none';
+                }
+            });
+
+            // Function to display reports for download
+            function displayReports(reports, jobId) {
+                const reportsListElement = document.getElementById('reportsList');
+                reportsListElement.innerHTML = '';
+
+                if (reports && reports.length > 0) {
+                    const reportsList = document.createElement('div');
+                    
+                    reports.forEach(report => {
+                        const reportItem = document.createElement('div');
+                        reportItem.className = 'report-item';
+                        
+                        const reportName = document.createElement('span');
+                        reportName.textContent = report;
+                        
+                        const downloadLink = document.createElement('a');
+                        downloadLink.className = 'button';
+                        downloadLink.href = `/api/download-report/${jobId}/${report}`;
+                        downloadLink.textContent = 'Download';
+                        downloadLink.target = '_blank';
+                        
+                        reportItem.appendChild(reportName);
+                        reportItem.appendChild(downloadLink);
+                        reportsList.appendChild(reportItem);
+                    });
+                    
+                    reportsListElement.appendChild(reportsList);
+                    document.getElementById('downloadsSection').style.display = 'block';
+                } else {
+                    reportsListElement.innerHTML = '<p>No reports were generated.</p>';
+                }
+
+                // Set up download cleaned data button
+                document.getElementById('downloadCleanedButton').onclick = () => {
+                    window.location.href = `/api/download-cleaned-data/${jobId}`;
+                };
+            }
+
+            // Helper function to show errors
+            function showError(message) {
+                error.textContent = message;
+                error.style.display = 'block';
+                result.style.display = 'none';
+            }
+
+            // Helper function to show success message
+            function showSuccess(message) {
+                result.textContent = message;
+                result.style.display = 'block';
+                error.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
